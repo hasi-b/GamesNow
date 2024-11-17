@@ -28,6 +28,11 @@ public class PlayerInteraction : MonoBehaviour
     bool isFinalStage;
     [SerializeField]
     GameObject explosion;
+    [SerializeField]
+    GameObject textChanger;
+
+    [SerializeField]
+    TextChange TextChange;
     void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
@@ -274,7 +279,8 @@ public class PlayerInteraction : MonoBehaviour
 
         }
         attachedObjects.Clear();
-
+        textChanger.SetActive(true);
+        StartCoroutine( TextChange.ChangeTextRoutine());
         yield return new WaitForSeconds(10f);
         SceneManager.LoadSceneAsync(1);
     }

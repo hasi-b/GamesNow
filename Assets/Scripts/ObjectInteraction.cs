@@ -5,4 +5,5 @@ using UnityEngine;
 public class ObjectInteraction : MonoBehaviour
 {
     public bool IsInlist = false;
+    public Sprite Sprite;
 }

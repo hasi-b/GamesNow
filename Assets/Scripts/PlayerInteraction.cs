@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -63,6 +64,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (isFinalStage && Input.GetKeyDown(KeyCode.Space))
         {
+            BackgroundAudio.instance.StartAngerMusic();
             PushObjectsOutward();
         }
         // Check for interaction input
@@ -88,6 +90,10 @@ public class PlayerInteraction : MonoBehaviour
 
         foreach (Collider2D collider in colliders)
         {
+            if (collider.CompareTag("Player"))
+            {
+                continue;
+            }
             GameObject obj = collider.gameObject;
 
             // If the object isn't already attached, attach it
@@ -237,7 +243,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         // Stop player movement
         playerMovement.moveSpeed = 0;
-
+       
         // Show "I WANT SPACE" text
         if (IWantSpaceText != null)
         {
@@ -253,19 +259,24 @@ public class PlayerInteraction : MonoBehaviour
     
     IEnumerator StopExplosion()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(5f);
         explosion.SetActive(false);
-        BackgroundAudio.instance.StartAngerMusic();
+       
         foreach (GameObject gm in attachedObjects)
         {
             Vector3 direction = (gm.transform.position - this.transform.position).normalized;
-            gm.GetComponent<Rigidbody2D>().AddForce(direction * 1000f);
-            Destroy(gm, 5f);
+            this.GetComponent<SpriteRenderer>().color = Color.yellow;
+            gm.GetComponent<SpriteRenderer>().sprite = gm.GetComponent<ObjectInteraction>().Sprite;
+            gm.GetComponent<Rigidbody2D>().AddForce(direction * 200f);
+            //Destroy(gm, 5f);
 
             // Move the object outward in the opposite direction
 
         }
         attachedObjects.Clear();
+
+        yield return new WaitForSeconds(10f);
+        SceneManager.LoadSceneAsync(1);
     }
 
     void PushObjectsOutward()

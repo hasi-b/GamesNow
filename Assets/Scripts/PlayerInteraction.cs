@@ -25,6 +25,8 @@ public class PlayerInteraction : MonoBehaviour
     private float originalMoveSpeed;
     public float pushObjectSpeed;
     bool isFinalStage;
+    [SerializeField]
+    GameObject explosion;
     void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
@@ -89,8 +91,9 @@ public class PlayerInteraction : MonoBehaviour
             GameObject obj = collider.gameObject;
 
             // If the object isn't already attached, attach it
-            if (!attachedObjects.Contains(obj))
+            if (!obj.GetComponent<ObjectInteraction>().IsInlist)
             {
+                obj.GetComponent<ObjectInteraction>().IsInlist = true;
                 StartCoroutine(HandleInteraction(obj));
                 break; // Attach only one object per key press
             }
@@ -223,6 +226,13 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        // Draw the interaction radius in the editor
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactRadius);
+    }
+
     void TriggerFinalStage()
     {
         // Stop player movement
@@ -241,7 +251,22 @@ public class PlayerInteraction : MonoBehaviour
     }
 
     
+    IEnumerator StopExplosion()
+    {
+        yield return new WaitForSeconds(2f);
+        explosion.SetActive(false);
+        BackgroundAudio.instance.StartAngerMusic();
+        foreach (GameObject gm in attachedObjects)
+        {
+            Vector3 direction = (gm.transform.position - this.transform.position).normalized;
+            gm.GetComponent<Rigidbody2D>().AddForce(direction * 1000f);
+            Destroy(gm, 5f);
 
+            // Move the object outward in the opposite direction
+
+        }
+        attachedObjects.Clear();
+    }
 
     void PushObjectsOutward()
     {
@@ -256,16 +281,11 @@ public class PlayerInteraction : MonoBehaviour
             //count--;
             //PushObject(objToPush);
 
-            foreach(GameObject gm in attachedObjects)
-            {
-                Vector3 direction = (gm.transform.position -this.transform.position).normalized;
-                gm.GetComponent<Rigidbody2D>().AddForce(direction*1000f);
-            Destroy(gm,5f);
-                
-                // Move the object outward in the opposite direction
-               
-            }
-            attachedObjects.Clear();
+            explosion.SetActive(true);
+
+            StartCoroutine(StopExplosion());
+
+            
            
 
         

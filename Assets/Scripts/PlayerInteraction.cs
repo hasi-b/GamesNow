@@ -24,7 +24,7 @@ public class PlayerInteraction : MonoBehaviour
     private PlayerMovement playerMovement;
     private float originalMoveSpeed;
     public float pushObjectSpeed;
-
+    bool isFinalStage;
     void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
@@ -58,6 +58,11 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
+
+        if (isFinalStage && Input.GetKeyDown(KeyCode.Space))
+        {
+            PushObjectsOutward();
+        }
         // Check for interaction input
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -68,7 +73,7 @@ public class PlayerInteraction : MonoBehaviour
         UpdateHoverPositions();
 
         // Check if all objects are attached
-        if (attachedObjects.Count == totalObjectsToInteract)
+        if ( !isFinalStage && attachedObjects.Count == totalObjectsToInteract)
         {
             TriggerFinalStage();
         }
@@ -159,7 +164,7 @@ public class PlayerInteraction : MonoBehaviour
         // Modify Rigidbody2D properties
         if (obj.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
         {
-            rb.bodyType = RigidbodyType2D.Kinematic; // Set the body type to Kinematic
+            //rb.bodyType = RigidbodyType2D.Kinematic; // Set the body type to Kinematic
             rb.velocity = Vector2.zero; // Stop the object's motion
         }
 
@@ -229,34 +234,48 @@ public class PlayerInteraction : MonoBehaviour
             IWantSpaceText.gameObject.SetActive(true);
         }
 
+
+        isFinalStage = true;
         // Initialize the pushing coroutine
-        StartCoroutine(PushObjectsOutward());
+        
     }
 
-    IEnumerator PushObjectsOutward()
-    {
-        int count = totalObjectsToInteract;
-        while (count > 0)
-        {
-            // Wait for the player to press Space
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
+    
 
-            // Pop the last object from the stack
-            GameObject objToPush = attachedObjects[count - 1];
-            // attachedObjects.RemoveAt(attachedObjects.Count - 1);
-            count--;
-            PushObject(objToPush);
-        }
-        totalObjectsToInteract = 0;
+
+    void PushObjectsOutward()
+    {
+       
+        
+            // Wait for the player to press Space
+           
+
+            //// Pop the last object from the stack
+            //GameObject objToPush = attachedObjects[count - 1];
+            //// attachedObjects.RemoveAt(attachedObjects.Count - 1);
+            //count--;
+            //PushObject(objToPush);
+
+            foreach(GameObject gm in attachedObjects)
+            {
+                Vector3 direction = (gm.transform.position -this.transform.position).normalized;
+                gm.GetComponent<Rigidbody2D>().AddForce(direction*1000f);
+            Destroy(gm,5f);
+                
+                // Move the object outward in the opposite direction
+               
+            }
+            attachedObjects.Clear();
+           
+
+        
+        
         Debug.Log("Outside the loop");
         // Restore player movement and UI
         playerMovement.moveSpeed = originalMoveSpeed;
         Debug.Log("Player should move now");
-        if (IWantSpaceText != null)
-        {
             IWantSpaceText.gameObject.SetActive(false);
-            Debug.Log("Text should be disabled");
-        }
+          
     }
 
     void PushObject(GameObject obj)

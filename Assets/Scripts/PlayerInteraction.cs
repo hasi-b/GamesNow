@@ -90,7 +90,7 @@ public class PlayerInteraction : MonoBehaviour
 
         foreach (Collider2D collider in colliders)
         {
-            if (collider.CompareTag("Player"))
+            if (collider.CompareTag("Player") || collider.CompareTag("Box"))
             {
                 continue;
             }
@@ -261,7 +261,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         yield return new WaitForSeconds(5f);
         explosion.SetActive(false);
-       
+        playerMovement.moveSpeed = originalMoveSpeed;
         foreach (GameObject gm in attachedObjects)
         {
             Vector3 direction = (gm.transform.position - this.transform.position).normalized;
@@ -303,7 +303,7 @@ public class PlayerInteraction : MonoBehaviour
         
         Debug.Log("Outside the loop");
         // Restore player movement and UI
-        playerMovement.moveSpeed = originalMoveSpeed;
+       
         Debug.Log("Player should move now");
             IWantSpaceText.gameObject.SetActive(false);
           
